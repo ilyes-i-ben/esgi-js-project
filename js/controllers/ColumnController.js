@@ -6,28 +6,23 @@ export class ColumnController {
     }
 
     initEventListeners() {
-        // Customize button
         document.getElementById("customizeBtn").addEventListener("click", () => {
             const columns = this.columnModel.getColumns();
             this.modalView.showCustomizeModal(columns);
         });
 
-        // Close customize modal
         document.getElementById("closeCustomizeModal").addEventListener("click", () => {
             this.modalView.hideCustomizeModal();
         });
 
-        // Add column button
         document.getElementById("addColumnBtn").addEventListener("click", () => {
             this.addColumn();
         });
 
-        // Save customization
         document.getElementById("saveCustomizeBtn").addEventListener("click", () => {
             this.saveColumnCustomizations();
         });
 
-        // Dynamic event delegation for column management
         document.addEventListener("click", (e) => {
             if (e.target.classList.contains("delete-btn")) {
                 const columnId = e.target.dataset.columnId;
@@ -50,7 +45,6 @@ export class ColumnController {
             return;
         }
 
-        // Move all books from deleted column to alternative column
         const books = await this.bookModel.getAllBooks();
         const booksToMove = books.filter(book => book.columnId === columnId);
 
@@ -66,13 +60,11 @@ export class ColumnController {
     async saveColumnCustomizations() {
         const columns = this.columnModel.getColumns();
 
-        // Update column names
         document.querySelectorAll(".column-name").forEach((input) => {
             const columnId = input.dataset.columnId;
             this.columnModel.updateColumn(columnId, { name: input.value });
         });
 
-        // Update column colors
         document.querySelectorAll(".color-picker").forEach((input) => {
             const columnId = input.dataset.columnId;
             this.columnModel.updateColumn(columnId, { color: input.value });
@@ -81,8 +73,7 @@ export class ColumnController {
         this.modalView.hideCustomizeModal();
         this.modalView.showToast("Personnalisation enregistrée", "success");
 
-        // Trigger library re-render
-        const searchInput = document.getElementById("searchInput");
-        window.libraryController.renderLibrary(searchInput.value);
+
+        window.libraryController.renderLibraryWithFilters();
     }
 }

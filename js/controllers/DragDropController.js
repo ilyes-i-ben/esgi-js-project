@@ -56,7 +56,6 @@ export class DragDropController {
         if (book && book.columnId !== targetColumnId) {
             await this.bookModel.moveBook(bookIsbn, targetColumnId);
 
-            // Trigger library re-render
             const searchInput = document.getElementById("searchInput");
             await window.libraryController.renderLibrary(searchInput.value);
 

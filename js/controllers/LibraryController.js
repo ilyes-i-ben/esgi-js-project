@@ -1,35 +1,64 @@
 export class LibraryController {
-    constructor(bookModel, columnModel, annotationModel, libraryView, modalView, dragDropController) {
+    constructor(bookModel, columnModel, annotationModel, libraryView, modalView, dragDropController, filterController) {
         this.bookModel = bookModel;
         this.columnModel = columnModel;
         this.annotationModel = annotationModel;
         this.libraryView = libraryView;
         this.modalView = modalView;
         this.dragDropController = dragDropController;
+        this.filterController = filterController;
+
+
+        this.filterController.setFilterChangeCallback((filters) => {
+            this.renderLibraryWithFilters();
+        });
     }
 
     async init() {
         this.libraryView.showLoader();
         this.initEventListeners();
         await this.renderLibrary();
+
+
+        const allBooks = await this.bookModel.getAllBooks();
+        this.filterController.initializeWithBooks(allBooks);
+
         this.libraryView.hideLoader();
     }
 
     async renderLibrary(filterQuery = "") {
         const columns = this.columnModel.getColumns();
-        let books = filterQuery
-            ? await this.bookModel.searchBooks(filterQuery)
-            : await this.bookModel.getAllBooks();
+        let books = await this.bookModel.getAllBooks();
 
-        // Enrich books with annotations
+
+        if (filterQuery) {
+            books = await this.bookModel.searchBooks(filterQuery);
+        }
+
         books = books.map(book => ({
             ...book,
             annotation: this.annotationModel.get(book.isbn)
         }));
 
         this.libraryView.renderLibrary(columns, books);
+        this.setupBookCardHandlers();
+        this.dragDropController.initialize();
+    }
 
-        // Setup drag and drop and click handlers
+    async renderLibraryWithFilters() {
+        const columns = this.columnModel.getColumns();
+        let books = await this.bookModel.getAllBooks();
+
+
+        books = books.map(book => ({
+            ...book,
+            annotation: this.annotationModel.get(book.isbn)
+        }));
+
+
+        const filteredBooks = this.filterController.filterBooks(books);
+
+        this.libraryView.renderLibrary(columns, filteredBooks);
         this.setupBookCardHandlers();
         this.dragDropController.initialize();
     }
@@ -39,15 +68,12 @@ export class LibraryController {
         const columns = this.columnModel.getColumns();
 
         bookCards.forEach((card) => {
-            // Add click handler for book details
             card.addEventListener("click", () => {
                 this.showBookDetails(card.dataset.bookIsbn);
             });
 
-            // Add action buttons
             const actionsDiv = card.querySelector(".book-actions");
 
-            // Details button
             const detailsBtn = document.createElement("button");
             detailsBtn.className = "details-btn";
             detailsBtn.textContent = "Détails";
@@ -57,7 +83,6 @@ export class LibraryController {
             });
             actionsDiv.appendChild(detailsBtn);
 
-            // Move buttons
             const bookColumnId = card.closest('.column').dataset.columnId;
             columns.forEach((column) => {
                 if (column.id !== bookColumnId) {
@@ -92,13 +117,13 @@ export class LibraryController {
         await this.bookModel.moveBook(isbn, targetColumnId);
         const column = this.columnModel.getColumnById(targetColumnId);
 
-        await this.renderLibrary(document.getElementById("searchInput").value);
+        await this.renderLibraryWithFilters();
         this.modalView.showToast(`"${book.title}" déplacé vers ${column.name}`, "success");
     }
 
     async addBook(bookData) {
         const newBook = await this.bookModel.addBook(bookData);
-        await this.renderLibrary(document.getElementById("searchInput").value);
+        await this.renderLibraryWithFilters();
         this.modalView.showToast(`"${newBook.title}" ajouté`, "success");
         return newBook;
     }
@@ -110,7 +135,7 @@ export class LibraryController {
         const success = await this.bookModel.deleteBook(isbn);
         if (success) {
             this.annotationModel.delete(isbn);
-            await this.renderLibrary(document.getElementById("searchInput").value);
+            await this.renderLibraryWithFilters();
             this.modalView.showToast(`"${book.title}" supprimé`, "success");
             this.modalView.hideBookDetailModal();
         }
@@ -121,13 +146,11 @@ export class LibraryController {
     }
 
     initEventListeners() {
-        // Add book button
         document.getElementById("addBookBtn").addEventListener("click", () => {
             const columns = this.columnModel.getColumns();
             this.modalView.showAddBookModal(columns);
         });
 
-        // Close modals
         document.getElementById("closeAddBookModal").addEventListener("click", () => {
             this.modalView.hideAddBookModal();
         });
@@ -136,7 +159,6 @@ export class LibraryController {
             this.modalView.hideBookDetailModal();
         });
 
-        // Add book form
         document.getElementById("addBookForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const bookData = {
@@ -159,21 +181,7 @@ export class LibraryController {
             this.modalView.hideAddBookModal();
         });
 
-        // Search functionality
-        const searchInput = document.getElementById("searchInput");
-        const searchBtn = document.getElementById("searchBtn");
 
-        searchBtn.addEventListener("click", async () => {
-            await this.searchBooks(searchInput.value);
-        });
-
-        searchInput.addEventListener("keyup", async (e) => {
-            if (e.key === "Enter") {
-                await this.searchBooks(searchInput.value);
-            }
-        });
-
-        // Modal click outside to close
         window.addEventListener("click", (e) => {
             if (e.target === document.getElementById("addBookModal")) {
                 this.modalView.hideAddBookModal();
@@ -186,16 +194,13 @@ export class LibraryController {
             }
         });
 
-        // Dynamic event delegation for modal content
         document.addEventListener("click", async (e) => {
-            // Star rating clicks
             if (e.target.classList.contains("star") && e.target.dataset.isbn) {
                 const rating = e.target.dataset.value;
                 const isbn = e.target.dataset.isbn;
                 this.updateStarDisplay(isbn, rating);
             }
 
-            // Move book buttons in detail modal
             if (e.target.classList.contains("move-detail-btn")) {
                 const columnId = e.target.dataset.columnId;
                 const isbn = document.querySelector("#bookDetailContent").querySelector("[data-isbn]")?.dataset?.isbn;
@@ -205,11 +210,9 @@ export class LibraryController {
                 }
             }
 
-            // Delete book button
             if (e.target.classList.contains("delete-btn")) {
                 const bookDetailContent = document.getElementById("bookDetailContent");
                 if (bookDetailContent && bookDetailContent.contains(e.target)) {
-                    // Find the ISBN from the modal content
                     const starContainer = document.getElementById("starContainer");
                     const isbn = starContainer?.querySelector("[data-isbn]")?.dataset.isbn;
                     if (isbn && confirm("Êtes-vous sûr de vouloir supprimer ce livre ?")) {
@@ -219,7 +222,6 @@ export class LibraryController {
             }
         });
 
-        // Form submission for annotations
         document.addEventListener("submit", async (e) => {
             if (e.target.id === "annotationForm") {
                 e.preventDefault();
@@ -229,14 +231,12 @@ export class LibraryController {
                 const selectedStars = starContainer.querySelectorAll(".star");
                 let rating = 0;
 
-                // Find the current rating based on filled stars
                 selectedStars.forEach((star, index) => {
                     if (star.textContent === "★") rating = index + 1;
                 });
 
                 if (isbn) {
                     await this.saveAnnotation(isbn, rating, comment);
-                    // Re-show the modal with updated content
                     await this.showBookDetails(isbn);
                 }
             }
@@ -250,7 +250,7 @@ export class LibraryController {
 
         const success = this.annotationModel.set(isbn, finalNote, finalComment);
         if (success) {
-            await this.renderLibrary(document.getElementById("searchInput").value);
+            await this.renderLibraryWithFilters();
             this.modalView.showToast("Annotation enregistrée", "success");
         }
     }
@@ -262,7 +262,6 @@ export class LibraryController {
             star.classList.toggle("active", (index + 1) <= rating);
         });
 
-        // Update or add rating text
         const container = document.querySelector(`[data-isbn="${isbn}"]`);
         let ratingText = container.querySelector(".star-note-text");
         if (rating > 0) {
