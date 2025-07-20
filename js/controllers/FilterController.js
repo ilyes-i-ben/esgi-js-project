@@ -48,6 +48,15 @@ export class FilterController {
             this.applyFilters();
         });
 
+        // new filterrr event listeners...
+        document.getElementById("authorFilter").addEventListener("change", () => {
+            this.applyFilters();
+        });
+
+        document.getElementById("annotationFilter").addEventListener("change", () => {
+            this.applyFilters();
+        });
+
         document.getElementById("clearFiltersBtn").addEventListener("click", () => {
             this.clearAllFilters();
         });
@@ -56,14 +65,21 @@ export class FilterController {
     initializeWithBooks(books) {
         const pageRange = this.filterModel.getPageRange(books);
         this.filterView.initializePageRange(pageRange.min, pageRange.max);
+
+        const authors = this.filterModel.getUniqueAuthors(books);
+        this.filterView.populateAuthors(authors);
     }
 
     applyFilters() {
         const searchQuery = this.filterView.getSearchQuery();
         const pagesFilter = this.filterView.getPagesFilter();
+        const authorFilter = this.filterView.getAuthorFilter();
+        const annotationFilter = this.filterView.getAnnotationFilter();
 
         this.filterModel.setSearchFilter(searchQuery);
         this.filterModel.setPagesFilter(pagesFilter.min, pagesFilter.max);
+        this.filterModel.setAuthorFilter(authorFilter);
+        this.filterModel.setAnnotationFilter(annotationFilter);
 
         if (this.onFilterChange) {
             this.onFilterChange(this.filterModel.getFilters());

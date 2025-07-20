@@ -31,6 +31,20 @@ export class FilterView {
             </div>
           </div>
         </div>
+        <div class="filter-group">
+          <label>Auteur:</label>
+          <select id="authorFilter">
+            <option value="">Tous les auteurs</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Annotations:</label>
+          <select id="annotationFilter">
+            <option value="">Tous les livres</option>
+            <option value="with">Avec annotations</option>
+            <option value="without">Sans annotations</option>
+          </select>
+        </div>
         <div class="filter-actions">
           <button id="clearFiltersBtn" class="btn secondary">
             <i class="fas fa-times"></i> Effacer
@@ -38,7 +52,6 @@ export class FilterView {
         </div>
       </div>
     `;
-
 
         searchContainer.parentNode.insertBefore(this.filterContainer, searchContainer.nextSibling);
     }
@@ -95,6 +108,8 @@ export class FilterView {
         this.searchInput.value = '';
         document.getElementById("pagesMin").value = '';
         document.getElementById("pagesMax").value = '';
+        document.getElementById("authorFilter").value = '';
+        document.getElementById("annotationFilter").value = '';
 
         const rangeMin = document.getElementById("rangeMin");
         const rangeMax = document.getElementById("rangeMax");
@@ -138,5 +153,25 @@ export class FilterView {
         pagesMax.value = rangeMax.value !== rangeMax.max ? rangeMax.value : '';
 
         this.updateRangeDisplay(rangeMin.value, rangeMax.value);
+    }
+
+    getAuthorFilter() {
+        return document.getElementById("authorFilter").value;
+    }
+
+    getAnnotationFilter() {
+        return document.getElementById("annotationFilter").value;
+    }
+
+    populateAuthors(authors) {
+        const authorSelect = document.getElementById("authorFilter");
+        authorSelect.innerHTML = '<option value="">Tous les auteurs</option>';
+
+        authors.forEach(author => {
+            const option = document.createElement("option");
+            option.value = author;
+            option.textContent = author;
+            authorSelect.appendChild(option);
+        });
     }
 }

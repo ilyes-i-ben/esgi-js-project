@@ -3,7 +3,9 @@ export class FilterModel {
         this.filters = {
             search: '',
             pagesMin: null,
-            pagesMax: null
+            pagesMax: null,
+            author: '',
+            hasAnnotation: ''
         };
     }
 
@@ -16,6 +18,14 @@ export class FilterModel {
         this.filters.pagesMax = max;
     }
 
+    setAuthorFilter(author) {
+        this.filters.author = author;
+    }
+
+    setAnnotationFilter(hasAnnotation) {
+        this.filters.hasAnnotation = hasAnnotation;
+    }
+
     getFilters() {
         return { ...this.filters };
     }
@@ -24,7 +34,9 @@ export class FilterModel {
         this.filters = {
             search: '',
             pagesMin: null,
-            pagesMax: null
+            pagesMax: null,
+            author: '',
+            hasAnnotation: ''
         };
     }
 
@@ -40,6 +52,14 @@ export class FilterModel {
             min: Math.min(...pages),
             max: Math.max(...pages)
         };
+    }
+
+    getUniqueAuthors(books) {
+        const authors = books
+            .map(book => book.author)
+            .filter(author => author && author.trim())
+            .map(author => author.trim());
+        return [...new Set(authors)].sort();
     }
 
     applyFilters(books) {
@@ -68,6 +88,27 @@ export class FilterModel {
                     return false;
                 }
 
+                return true;
+            });
+        }
+
+        if (this.filters.author && this.filters.author.trim()) {
+            filteredBooks = filteredBooks.filter(book =>
+                book.author && book.author.toLowerCase().includes(this.filters.author.toLowerCase())
+            );
+        }
+
+        if (this.filters.hasAnnotation && this.filters.hasAnnotation !== '') {
+            filteredBooks = filteredBooks.filter(book => {
+                const hasNote = book.annotation && book.annotation.note;
+                const hasComment = book.annotation && book.annotation.commentaire;
+                const hasAnyAnnotation = hasNote || hasComment;
+
+                if (this.filters.hasAnnotation === 'with') {
+                    return hasAnyAnnotation;
+                } else if (this.filters.hasAnnotation === 'without') {
+                    return !hasAnyAnnotation;
+                }
                 return true;
             });
         }

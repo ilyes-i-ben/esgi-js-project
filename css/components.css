@@ -124,6 +124,22 @@
     box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.1);
 }
 
+.filter-group select {
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #6200ea;
+    box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.1);
+}
+
 .range-inputs span {
     color: #666;
     font-weight: 500;
