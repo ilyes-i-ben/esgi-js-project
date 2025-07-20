@@ -15,11 +15,22 @@ export class ModalView {
     hideAddBookModal() {
         this.addBookModal.style.display = "none";
         document.getElementById("addBookForm").reset();
+
+        const validationMessage = document.getElementById("isbnValidation");
+        if (validationMessage) {
+            validationMessage.style.display = "none";
+            validationMessage.textContent = "";
+        }
+
+        const isbnInput = document.getElementById("bookIsbn");
+        if (isbnInput) {
+            isbnInput.classList.remove("valid", "invalid");
+        }
     }
 
     showBookDetailModal(book, columns, annotation) {
         const currentColumn = columns.find((col) => col.id === book.columnId);
-        //TODO: move to a html file instead. 
+        //TODO: move to a html file instead.
         this.bookDetailContent.innerHTML = `
       <div class="book-detail">
         <div class="detail-info">

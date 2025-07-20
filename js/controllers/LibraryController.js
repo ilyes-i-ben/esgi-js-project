@@ -1,3 +1,5 @@
+import { FormValidator } from '../utils/FormValidator.js';
+
 export class LibraryController {
     constructor(bookModel, columnModel, annotationModel, libraryView, modalView, dragDropController, filterController) {
         this.bookModel = bookModel;
@@ -7,7 +9,7 @@ export class LibraryController {
         this.modalView = modalView;
         this.dragDropController = dragDropController;
         this.filterController = filterController;
-
+        this.formValidator = null;
 
         this.filterController.setFilterChangeCallback((filters) => {
             this.renderLibraryWithFilters();
@@ -149,6 +151,10 @@ export class LibraryController {
         document.getElementById("addBookBtn").addEventListener("click", () => {
             const columns = this.columnModel.getColumns();
             this.modalView.showAddBookModal(columns);
+
+            if (!this.formValidator) {
+                this.formValidator = new FormValidator();
+            }
         });
 
         document.getElementById("closeAddBookModal").addEventListener("click", () => {
@@ -161,6 +167,10 @@ export class LibraryController {
 
         document.getElementById("addBookForm").addEventListener("submit", async (e) => {
             e.preventDefault();
+            if (this.formValidator && !this.formValidator.validateForm()) {
+                this.modalView.showToast("Veuillez corriger les erreurs de validation", "error");
+                return;
+            }
             const bookData = {
                 title: document.getElementById("bookTitle").value,
                 author: document.getElementById("bookAuthor").value,
