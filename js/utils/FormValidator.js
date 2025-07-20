@@ -2,6 +2,7 @@ export class FormValidator {
     constructor() {
         this.validators = new Map();
         this.setupISBNValidator();
+        this.setupURLValidator();
     }
 
     setupISBNValidator() {
@@ -19,6 +20,24 @@ export class FormValidator {
 
         isbnInput.addEventListener("blur", (e) => {
             this.validateISBN(e.target.value, validationMessage);
+        });
+    }
+
+    setupURLValidator() {
+        const urlInput = document.getElementById("bookWebsite");
+        if (!urlInput) return;
+
+        const validationMessage = document.createElement("div");
+        validationMessage.className = "validation-message";
+        validationMessage.id = "urlValidation";
+        urlInput.parentNode.appendChild(validationMessage);
+
+        urlInput.addEventListener("input", (e) => {
+            this.validateURL(e.target.value, validationMessage);
+        });
+
+        urlInput.addEventListener("blur", (e) => {
+            this.validateURL(e.target.value, validationMessage);
         });
     }
 
@@ -47,6 +66,31 @@ export class FormValidator {
         return isValid;
     }
 
+    validateURL(value, messageElement) {
+        const urlInput = document.getElementById("bookWebsite");
+
+        if (!value || value.trim() === "") {
+            this.clearValidation(messageElement);
+            urlInput.classList.remove("valid", "invalid");
+            return true;
+        }
+
+        const urlRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
+        const isValid = urlRegex.test(value.trim());
+
+        if (isValid) {
+            this.showValidation(messageElement, "✓ URL valide", "valid");
+            urlInput.classList.remove("invalid");
+            urlInput.classList.add("valid");
+        } else {
+            this.showValidation(messageElement, "✗ URL invalide - Format attendu: https://example.com", "invalid");
+            urlInput.classList.remove("valid");
+            urlInput.classList.add("invalid");
+        }
+
+        return isValid;
+    }
+
     showValidation(element, message, type) {
         element.textContent = message;
         element.className = `validation-message ${type}`;
@@ -63,10 +107,21 @@ export class FormValidator {
         const isbnInput = document.getElementById("bookIsbn");
         const isbnValue = isbnInput?.value || "";
 
+        const urlInput = document.getElementById("bookWebsite");
+        const urlValue = urlInput?.value || "";
+
+        let isValid = true;
+
         if (isbnValue.trim() !== "") {
-            return this.validateISBN(isbnValue, document.getElementById("isbnValidation"));
+            const isbnValid = this.validateISBN(isbnValue, document.getElementById("isbnValidation"));
+            isValid = isValid && isbnValid;
         }
 
-        return true;
+        if (urlValue.trim() !== "") {
+            const urlValid = this.validateURL(urlValue, document.getElementById("urlValidation"));
+            isValid = isValid && urlValid;
+        }
+
+        return isValid;
     }
 }

@@ -16,15 +16,28 @@ export class ModalView {
         this.addBookModal.style.display = "none";
         document.getElementById("addBookForm").reset();
 
-        const validationMessage = document.getElementById("isbnValidation");
-        if (validationMessage) {
-            validationMessage.style.display = "none";
-            validationMessage.textContent = "";
+        // Clear ISBN validation
+        const isbnValidationMessage = document.getElementById("isbnValidation");
+        if (isbnValidationMessage) {
+            isbnValidationMessage.style.display = "none";
+            isbnValidationMessage.textContent = "";
         }
 
         const isbnInput = document.getElementById("bookIsbn");
         if (isbnInput) {
             isbnInput.classList.remove("valid", "invalid");
+        }
+
+        // Clear URL validation
+        const urlValidationMessage = document.getElementById("urlValidation");
+        if (urlValidationMessage) {
+            urlValidationMessage.style.display = "none";
+            urlValidationMessage.textContent = "";
+        }
+
+        const urlInput = document.getElementById("bookWebsite");
+        if (urlInput) {
+            urlInput.classList.remove("valid", "invalid");
         }
     }
 
