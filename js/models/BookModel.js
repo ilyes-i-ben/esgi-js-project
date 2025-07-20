@@ -9,7 +9,7 @@ export class BookModel {
 
         try {
             const response = await fetch("https://keligmartin.github.io/api/books.json");
-            if (!response.ok) throw new Error("Network response was not ok");
+            if (!response.ok) throw new Error("network response was not ok");
             const initialBooks = await response.json();
 
             const books = localStorage.getItem("library-books");
@@ -23,7 +23,7 @@ export class BookModel {
             }
             this.initialBooksLoaded = true;
         } catch (error) {
-            console.error("Failed to fetch initial books:", error);
+            console.error("failed to fetch initial books:", error);
             this.initialBooksLoaded = true;
         }
     }

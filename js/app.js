@@ -9,6 +9,7 @@ import { LibraryController } from './controllers/LibraryController.js';
 import { ColumnController } from './controllers/ColumnController.js';
 import { DragDropController } from './controllers/DragDropController.js';
 import { FilterController } from './controllers/FilterController.js';
+import { ErrorHandler } from './utils/ErrorHandler.js';
 
 class App {
   constructor() {
@@ -19,6 +20,8 @@ class App {
     this.libraryView = new LibraryView();
     this.modalView = new ModalView();
     this.filterView = new FilterView();
+
+    this.errorHandler = new ErrorHandler(this.modalView);
 
     this.dragDropController = new DragDropController(
       this.bookModel,
@@ -48,17 +51,35 @@ class App {
     );
 
     window.libraryController = this.libraryController;
+    window.errorHandler = this.errorHandler;
   }
 
   async init() {
-    this.libraryController.initEventListeners();
-    this.columnController.initEventListeners();
-    this.filterController.initEventListeners();
-    await this.libraryController.init();
+    try {
+      this.libraryController.initEventListeners();
+      this.columnController.initEventListeners();
+      this.filterController.initEventListeners();
+      await this.libraryController.init();
+    } catch (error) {
+      this.errorHandler.handleError(error, 'Erreur d\'initialisation');
+    }
   }
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
-  const app = new App();
-  await app.init();
+  try {
+    const app = new App();
+    await app.init();
+  } catch (error) {
+    console.error('Critical initialization error:', error);
+
+    const toast = document.getElementById('toast');
+    if (toast) {
+      toast.textContent = 'Erreur critique lors du chargement de l\'application';
+      toast.className = 'toast show error';
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 5000);
+    }
+  }
 });

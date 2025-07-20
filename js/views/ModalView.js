@@ -16,7 +16,7 @@ export class ModalView {
         this.addBookModal.style.display = "none";
         document.getElementById("addBookForm").reset();
 
-        // Clear ISBN validation
+        // clear
         const isbnValidationMessage = document.getElementById("isbnValidation");
         if (isbnValidationMessage) {
             isbnValidationMessage.style.display = "none";
@@ -28,7 +28,7 @@ export class ModalView {
             isbnInput.classList.remove("valid", "invalid");
         }
 
-        // Clear URL validation
+        // clear
         const urlValidationMessage = document.getElementById("urlValidation");
         if (urlValidationMessage) {
             urlValidationMessage.style.display = "none";

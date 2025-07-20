@@ -54,11 +54,11 @@ export class FormValidator {
         const isValid = isbnRegex.test(value.trim());
 
         if (isValid) {
-            this.showValidation(messageElement, "✓ ISBN valide", "valid");
+            this.showValidation(messageElement, "ISBN valide - Format correct", "valid");
             isbnInput.classList.remove("invalid");
             isbnInput.classList.add("valid");
         } else {
-            this.showValidation(messageElement, "✗ ISBN invalide - Format attendu: 978-2-123456-78-9 ou 2-123456-78-9", "invalid");
+            this.showValidation(messageElement, "ISBN invalide - Veuillez utiliser le format: 978-2-123456-78-9 ou 2-123456-78-9", "invalid");
             isbnInput.classList.remove("valid");
             isbnInput.classList.add("invalid");
         }
@@ -79,11 +79,11 @@ export class FormValidator {
         const isValid = urlRegex.test(value.trim());
 
         if (isValid) {
-            this.showValidation(messageElement, "✓ URL valide", "valid");
+            this.showValidation(messageElement, "URL valide - Lien vérifié", "valid");
             urlInput.classList.remove("invalid");
             urlInput.classList.add("valid");
         } else {
-            this.showValidation(messageElement, "✗ URL invalide - Format attendu: https://example.com", "invalid");
+            this.showValidation(messageElement, "URL invalide - Veuillez utiliser le format: https://example.com", "invalid");
             urlInput.classList.remove("valid");
             urlInput.classList.add("invalid");
         }
@@ -92,15 +92,22 @@ export class FormValidator {
     }
 
     showValidation(element, message, type) {
-        element.textContent = message;
+        const icon = type === 'valid' ? '✅' : '❌';
+        element.innerHTML = `<span class="validation-icon">${icon}</span> ${message}`;
         element.className = `validation-message ${type}`;
-        element.style.display = "block";
+
+        element.classList.remove('show');
+        element.offsetHeight;
+        element.classList.add('show');
     }
 
     clearValidation(element) {
-        element.textContent = "";
-        element.style.display = "none";
-        element.className = "validation-message";
+        element.classList.remove('show');
+
+        setTimeout(() => {
+            element.innerHTML = "";
+            element.className = "validation-message";
+        }, 400);
     }
 
     validateForm() {
